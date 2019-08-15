@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import api from '../../services/api';
 
 import Container from '../../components/Container';
-import { Loading, Owner, IssueList } from './styles';
+import { Loading, Owner, IssueList, FilterOption } from './styles';
 
 export default class Repository extends Component {
   // eslint-disable-next-line react/static-property-placement
@@ -20,6 +20,7 @@ export default class Repository extends Component {
     repository: {},
     issues: [],
     loading: true,
+    filters: ['all', 'open', 'closed'],
   };
 
   async componentDidMount() {
@@ -31,7 +32,7 @@ export default class Repository extends Component {
       api.get(`/repos/${repoName}`),
       api.get(`/repos/${repoName}/issues`, {
         params: {
-          state: 'open',
+          state: 'all',
           per_page: 5,
         },
       }),
@@ -44,8 +45,30 @@ export default class Repository extends Component {
     });
   }
 
+  handleFilter = async e => {
+    const { match } = this.props;
+
+    const repoName = decodeURIComponent(match.params.repository);
+
+    const [repository, issues] = await Promise.all([
+      api.get(`/repos/${repoName}`),
+      api.get(`/repos/${repoName}/issues`, {
+        params: {
+          state: e.target.value,
+          per_page: 5,
+        },
+      }),
+    ]);
+
+    this.setState({
+      repository: repository.data,
+      issues: issues.data,
+      loading: false,
+    });
+  };
+
   render() {
-    const { repository, issues, loading } = this.state;
+    const { repository, issues, loading, filters } = this.state;
 
     if (loading) {
       return <Loading>Carregando</Loading>;
@@ -60,6 +83,13 @@ export default class Repository extends Component {
           <p>{repository.description}</p>
         </Owner>
 
+        <FilterOption onChange={this.handleFilter}>
+          {filters.map(filter => (
+            <option key={filter} value={filter}>
+              {filter}
+            </option>
+          ))}
+        </FilterOption>
         <IssueList>
           {issues.map(issue => (
             <li key={String(issue.id)}>
