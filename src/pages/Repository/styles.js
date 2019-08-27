@@ -107,3 +107,16 @@ export const FilterOption = styled.select`
   margin-left: 10px;
   border-radius: 4px;
 `;
+
+export const PageButtons = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+
+  button {
+    border: 0;
+    padding: 0 15px;
+    margin-left: 10px;
+    border-radius: 4px;
+  }  
+`;
